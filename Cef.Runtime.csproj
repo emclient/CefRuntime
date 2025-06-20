@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="cef_binary_x86/include/**/*" PackagePath="include/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="runtime.win-x86.Cef.Runtime.csproj" />
+    <ProjectReference Include="runtime.win-x64.Cef.Runtime.csproj" />
+  </ItemGroup>
+</Project>
