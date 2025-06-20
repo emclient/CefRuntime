@@ -1,0 +1,45 @@
+name: Build CEF
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Release tag:'
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Download CEF binaries
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: 'emclient/CefBuild'
+          tag: ${{ input.tag }}
+          latest: ${{ input.tag && 'false' || 'true' }}
+          fileName: cef_binary_*_minimal.tar.bz2
+      
+      - name: Extract CEF binaries
+        run: |
+          tar -xvjf cef_binary_*_windows32_minimal.tar.bz2 -C cef_binary_x86 --strip-components=1
+          tar -xvjf cef_binary_*_windows64_minimal.tar.bz2 -C cef_binary_x64 --strip-components=1
+
+      - name: Build NuGet packages
+        run: |
+          dotnet pack runtime.win-x86.Cef.Runtime.csproj -o out
+          dotnet pack runtime.win-x64.Cef.Runtime.csproj -o out
+          dotnet pack Cef.Runtime.csproj -o out
+
+      - name: Publish on GitHubAdd commentMore actions
+        run: |
+          find out -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://nuget.pkg.github.com/emclient/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+
