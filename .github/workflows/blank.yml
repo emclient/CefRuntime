@@ -24,8 +24,8 @@ jobs:
         uses: robinraju/release-downloader@v1
         with:
           repository: 'emclient/CefBuild'
-          tag: ${{ input.tag }}
-          latest: ${{ input.tag && 'false' || 'true' }}
+          tag: ${{ inputs.tag }}
+          latest: ${{ inputs.tag && 'false' || 'true' }}
           fileName: cef_binary_*_minimal.tar.bz2
       
       - name: Extract CEF binaries
