@@ -30,6 +30,8 @@ jobs:
       
       - name: Extract CEF binaries
         run: |
+          mkdir cef_binary_x86
+          mkdir cef_binary_x64
           tar -xvjf cef_binary_*_windows32_minimal.tar.bz2 -C cef_binary_x86 --strip-components=1
           tar -xvjf cef_binary_*_windows64_minimal.tar.bz2 -C cef_binary_x64 --strip-components=1
 
