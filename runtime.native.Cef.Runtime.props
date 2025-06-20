@@ -8,6 +8,5 @@
 
   <ItemGroup>
     <None Include="$(CefBinaryPath)/Release/*" PackagePath="runtimes/$(CefRuntimeIdentifier)/native/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
-    <None Include="$(CefBinaryPath)/Resources/**/*" PackagePath="runtimes/$(CefRuntimeIdentifier)/native/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
   </ItemGroup>
 </Project>

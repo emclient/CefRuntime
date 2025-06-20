@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <None Include="cef_binary_x86/include/**/*" PackagePath="include/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" />
+    <Content Include="cef_binary_x86/Resources/**/*" PackagePath="contentFiles/any/any/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" PackageCopyToOutput="true" />
   </ItemGroup>
 
   <ItemGroup>
