@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,8 +9,14 @@
     <Content Include="cef_binary_x86/Resources/**/*" PackagePath="contentFiles/any/any/%(RecursiveDir)%(Filename)%(Extension)" Pack="true" PackageCopyToOutput="true" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="runtime.win-x86.Cef.Runtime.csproj" />
-    <ProjectReference Include="runtime.win-x64.Cef.Runtime.csproj" />
-  </ItemGroup>
+  <Target Name="CreateRuntimeJson" Inputs="runtime.template.json" Outputs="$(IntermediateOutputPath)/runtime.json" BeforeTargets="CollectPackageReferences">
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)/runtime.json"
+      Lines="$([System.IO.File]::ReadAllText('runtime.template.json').Replace('$VERSION$',$(VersionShort)))"
+      Overwrite="true" />
+
+    <ItemGroup>
+      <None Include="$(IntermediateOutputPath)/runtime.json" PackagePath="runtime.json" Pack="true" />
+    </ItemGroup>
+  </Target>
 </Project>

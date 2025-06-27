@@ -1,0 +1,14 @@
+{
+  "runtimes": {
+    "win-x86": {
+      "libclang": {
+        "runtime.win-arm64.Cef.Runtime": "$VERSION$"
+      }
+    },
+    "win-x64": {
+      "libclang": {
+        "runtime.win-x64.Cef.Runtime": "$VERSION$"
+      }
+    }
+  }
+}
