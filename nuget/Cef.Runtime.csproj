@@ -12,7 +12,7 @@
   <Target Name="CreateRuntimeJson" Inputs="runtime.template.json" Outputs="$(IntermediateOutputPath)/runtime.json" BeforeTargets="CollectPackageReferences">
     <WriteLinesToFile
       File="$(IntermediateOutputPath)/runtime.json"
-      Lines="$([System.IO.File]::ReadAllText('runtime.template.json').Replace('$VERSION$',$(VersionShort)))"
+      Lines="$([System.IO.File]::ReadAllText('runtime.template.json').Replace('$VERSION$',$(PackageVersion)))"
       Overwrite="true" />
 
     <ItemGroup>
