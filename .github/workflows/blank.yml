@@ -8,7 +8,7 @@ on:
         type: string
 
 jobs:
-  build:
+  publish-nuget:
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -30,18 +30,18 @@ jobs:
       
       - name: Extract CEF binaries
         run: |
-          mkdir cef_binary_x86
-          mkdir cef_binary_x64
+          mkdir nuget/cef_binary_x86
+          mkdir nuget/cef_binary_x64
           tar -xvjf cef_binary_*_windows32_minimal.tar.bz2 -C cef_binary_x86 --strip-components=1
           tar -xvjf cef_binary_*_windows64_minimal.tar.bz2 -C cef_binary_x64 --strip-components=1
 
       - name: Build NuGet packages
         run: |
-          dotnet pack runtime.win-x86.Cef.Runtime.csproj -o out
-          dotnet pack runtime.win-x64.Cef.Runtime.csproj -o out
-          dotnet pack Cef.Runtime.csproj -o out
+          dotnet pack nuget/runtime.win-x86.Cef.Runtime.csproj -o artifacts
+          dotnet pack nuget/runtime.win-x64.Cef.Runtime.csproj -o artifacts
+          dotnet pack nuget/Cef.Runtime.csproj -o artifacts
 
       - name: Publish on GitHub
         run: |
-          find out -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://nuget.pkg.github.com/emclient/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+          find artifacts -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://nuget.pkg.github.com/emclient/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
 
