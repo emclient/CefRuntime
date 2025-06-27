@@ -1,4 +1,4 @@
-name: Build CEF NuGet
+name: Build CEF
 
 on:
   workflow_dispatch:
