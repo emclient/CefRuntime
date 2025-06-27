@@ -1,0 +1,86 @@
+name: Build CEF NuGet
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to build:'
+        type: string
+        required: true
+        default: 'em-7204'
+      clean:
+        description: 'Force clean'
+        type: boolean
+        required: true
+        default: false
+
+jobs:
+  build:
+    runs-on:
+      group: Metal
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    timeout-minutes: 1440
+    steps:
+      - name: Download automate-git.py
+        shell: cmd
+        run: curl -O https://raw.githubusercontent.com/emclient/cef/refs/heads/${{ inputs.branch }}/tools/automate/automate-git.py
+      - name: Build CEF (win-x86)
+        shell: cmd
+        run: |
+          set GN_DEFINES=is_official_build=true
+          set GYP_MSVS_VERSION=2022
+          set CEF_ARCHIVE_FORMAT=tar.bz2
+          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} --clean-artifacts --with-pgo-profiles
+      - name: Build CEF (win-x64)
+        shell: cmd
+        run: |
+          set GN_DEFINES=is_official_build=true
+          set GYP_MSVS_VERSION=2022
+          set CEF_ARCHIVE_FORMAT=tar.bz2
+          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} --x64-build --with-pgo-profiles
+      - name: Get CEF version
+        id: get_version
+        shell: bash
+        run: |
+          CEF_VERSION=$(ls -d chromium/src/cef/binary_distrib/cef_binary_*_windows32 | sed -n "s/.*cef_binary_\(.*\)_windows.*/\1/p")
+          echo "CEF_VERSION=${CEF_VERSION}" >> $GITHUB_ENV
+          echo "version=${CEF_VERSION}" >> $GITHUB_OUTPUT
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.CEF_VERSION }}
+          files: ${{ github.workspace }}/chromium/src/cef/binary_distrib/*.tar.bz2
+
+  publish-nuget:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Download CEF binaries
+        uses: robinraju/release-downloader@v1
+        with:
+          tag: v${{ needs.build.outputs.version }}
+          fileName: cef_binary_*_minimal.tar.bz2
+      - name: Extract CEF binaries
+        run: |
+          mkdir nuget/cef_binary_x86
+          mkdir nuget/cef_binary_x64
+          tar -xvjf cef_binary_*_windows32_minimal.tar.bz2 -C nuget/cef_binary_x86 --strip-components=1
+          tar -xvjf cef_binary_*_windows64_minimal.tar.bz2 -C nuget/cef_binary_x64 --strip-components=1
+      - name: Build NuGet packages
+        run: |
+          dotnet pack nuget/runtime.win-x86.Cef.Runtime.csproj -o artifacts
+          dotnet pack nuget/runtime.win-x64.Cef.Runtime.csproj -o artifacts
+          dotnet pack nuget/Cef.Runtime.csproj -o artifacts
+      - name: Publish on GitHub
+        run: |
+          find artifacts -name '*.nupkg' | xargs -i dotnet nuget push {} -s https://nuget.pkg.github.com/emclient/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
