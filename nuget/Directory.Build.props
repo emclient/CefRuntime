@@ -7,7 +7,7 @@
     <EnableDefaultItems>false</EnableDefaultItems>
     <BaseIntermediateOutputPath>$(MSBuildProjectDirectory)\obj-$(MSBuildProjectName)</BaseIntermediateOutputPath>
 
-    <BazelVariablesFileContent>$([System.IO.File]::ReadAllText('$(ProjectDir)cef_binary_x86/bazel/variables.bzl'))</BazelVariablesFileContent>
+    <BazelVariablesFileContent>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)cef_binary_x86/bazel/variables.bzl'))</BazelVariablesFileContent>
     <VersionLong>$([System.Text.RegularExpressions.Regex]::Match($(BazelVariablesFileContent), 'VERSION_LONG="(.*?)"').Groups[1].Value)</VersionLong>
     <VersionShort>$([System.Text.RegularExpressions.Regex]::Match($(VersionLong), '^((\d+).(\d+).(\d+))').Groups[1].Value)</VersionShort>
     <!-- Standard package properties -->
