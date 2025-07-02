@@ -14,7 +14,6 @@ on:
         required: true
         default: false
 
-
 jobs:
   build:
     strategy:
@@ -61,8 +60,7 @@ jobs:
         id: get_version
         shell: bash
         run: |
-          CEF_VERSION=$(ls -d artifacts/**/cef_binary_*_windows32 | sed -n "s/.*cef_binary_\(.*\)_windows.*/\1/p")
-          echo "CEF_VERSION=${CEF_VERSION}" >> $GITHUB_ENV
+          CEF_VERSION=$(ls -d artifacts/cef_binary_win-x86/cef_binary_*_windows32.tar.bz2 | sed -n "s/.*cef_binary_\(.*\)_windows.*/\1/p")
           echo "version=${CEF_VERSION}" >> $GITHUB_OUTPUT
       - name: Create release
         uses: softprops/action-gh-release@v2
