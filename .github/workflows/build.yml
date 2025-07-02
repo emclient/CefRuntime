@@ -14,49 +14,65 @@ on:
         required: true
         default: false
 
+
 jobs:
   build:
+    strategy:
+      matrix:
+        arch: [win-x86, win-x64]
     runs-on:
       group: Metal
     permissions:
       contents: write
+    timeout-minutes: 1440
     outputs:
       version: ${{ steps.get_version.outputs.version }}
-    timeout-minutes: 1440
     steps:
       - name: Download automate-git.py
         shell: cmd
         run: curl -O https://raw.githubusercontent.com/emclient/cef/refs/heads/${{ inputs.branch }}/tools/automate/automate-git.py
-      - name: Build CEF (win-x86)
+      - name: Build CEF (${{ matrix.arch }})
         shell: cmd
         run: |
           set GN_DEFINES=is_official_build=true
           set GYP_MSVS_VERSION=2022
           set CEF_ARCHIVE_FORMAT=tar.bz2
-          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} --clean-artifacts --with-pgo-profiles
-      - name: Build CEF (win-x64)
-        shell: cmd
-        run: |
-          set GN_DEFINES=is_official_build=true
-          set GYP_MSVS_VERSION=2022
-          set CEF_ARCHIVE_FORMAT=tar.bz2
-          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} --x64-build --with-pgo-profiles
+          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} ${{ matrix.arch == 'win-x64' && '--x64-build' }} --clean-artifacts --with-pgo-profiles
+      - name: Upload CEF artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cef_binary_${{ matrix.arch }}
+          path: |
+            chromium/src/cef/binary_distrib/cef_binary_*_${{ matrix.arch == 'win-x86' && 'windows32' || 'windows64' }}*.tar.bz2
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ needs.build.outputs.version }}
+    steps:
+      - name: Download CEF artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
       - name: Get CEF version
         id: get_version
         shell: bash
         run: |
-          CEF_VERSION=$(ls -d chromium/src/cef/binary_distrib/cef_binary_*_windows32 | sed -n "s/.*cef_binary_\(.*\)_windows.*/\1/p")
+          CEF_VERSION=$(ls -d artifacts/**/cef_binary_*_windows32 | sed -n "s/.*cef_binary_\(.*\)_windows.*/\1/p")
           echo "CEF_VERSION=${CEF_VERSION}" >> $GITHUB_ENV
           echo "version=${CEF_VERSION}" >> $GITHUB_OUTPUT
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ env.CEF_VERSION }}
-          files: ${{ github.workspace }}/chromium/src/cef/binary_distrib/*.tar.bz2
+          tag_name: v${{ steps.get_version.outputs.version }}
+          files: ./artifacts/**/*.tar.bz2
 
   publish-nuget:
     runs-on: ubuntu-latest
-    needs: build
+    needs: release
     permissions:
       packages: write
       contents: read
@@ -68,7 +84,7 @@ jobs:
       - name: Download CEF binaries
         uses: robinraju/release-downloader@v1
         with:
-          tag: v${{ needs.build.outputs.version }}
+          tag: v${{ needs.release.outputs.version }}
           fileName: cef_binary_*_minimal.tar.bz2
       - name: Extract CEF binaries
         run: |
