@@ -7,7 +7,7 @@ on:
         description: 'Branch to build:'
         type: string
         required: true
-        default: 'em-7204'
+        default: 'em-7258'
       clean:
         description: 'Force clean'
         type: boolean
