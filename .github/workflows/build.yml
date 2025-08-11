@@ -35,7 +35,7 @@ jobs:
             runner: 'arm64'
     runs-on:
       group: Metal
-      labels: ${{ matrix.runner }}
+      labels: ["${{ matrix.runner }}"]
     permissions:
       contents: write
     timeout-minutes: 1440
