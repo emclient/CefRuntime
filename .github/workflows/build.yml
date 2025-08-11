@@ -31,7 +31,7 @@ jobs:
           #  runner: 'x64'
           - arch: win-arm64
             output-suffix: 'windowsarm64'
-            build-switch: '--arm64-build'
+            build-switch: '--build-target=cefsimple --arm64-build'
             runner: 'arm64'
     runs-on:
       group: Metal
