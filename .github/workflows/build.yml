@@ -18,7 +18,18 @@ jobs:
   build:
     strategy:
       matrix:
-        arch: [win-x86, win-x64]
+        #arch: [win-x86, win-x64, win-arm64]
+        arch: [win-arm64]
+        includes:
+          #- arch: win-x86
+          #  output-suffix: windows32
+          #  build-switch: ''
+          #- arch: win-x64
+          #  output-suffix: windows64
+          #  build-switch: '--x64-build'
+          - arch: win-arm64
+            output-suffix: windowsarm64
+            build-switch: '--arm64-build'
     runs-on:
       group: Metal
     permissions:
@@ -34,15 +45,16 @@ jobs:
           set GN_DEFINES=is_official_build=true
           set GYP_MSVS_VERSION=2022
           set CEF_ARCHIVE_FORMAT=tar.bz2
-          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} ${{ matrix.arch == 'win-x64' && '--x64-build' }} --clean-artifacts --with-pgo-profiles
+          python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} ${{ matrix.build-switch }} --clean-artifacts --with-pgo-profiles
       - name: Upload CEF artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cef_binary_${{ matrix.arch }}
           path: |
-            chromium/src/cef/binary_distrib/cef_binary_*_${{ matrix.arch == 'win-x86' && 'windows32' || 'windows64' }}*.tar.bz2
+            chromium/src/cef/binary_distrib/cef_binary_*_${{ matrix.output-suffix }}*.tar.bz2
 
   release:
+    if: false
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -67,6 +79,7 @@ jobs:
           files: ./artifacts/**/*.tar.bz2
 
   publish-nuget:
+    if: false
     runs-on: ubuntu-latest
     needs: release
     permissions:
@@ -86,12 +99,15 @@ jobs:
         run: |
           mkdir nuget/cef_binary_x86
           mkdir nuget/cef_binary_x64
+          mkdir nuget/cef_binary_arm64
           tar -xvjf cef_binary_*_windows32_minimal.tar.bz2 -C nuget/cef_binary_x86 --strip-components=1
           tar -xvjf cef_binary_*_windows64_minimal.tar.bz2 -C nuget/cef_binary_x64 --strip-components=1
+          tar -xvjf cef_binary_*_windowsarm64_minimal.tar.bz2 -C nuget/cef_binary_arm64 --strip-components=1
       - name: Build NuGet packages
         run: |
           dotnet pack nuget/runtime.win-x86.Cef.Runtime.csproj -o artifacts
           dotnet pack nuget/runtime.win-x64.Cef.Runtime.csproj -o artifacts
+          dotnet pack nuget/runtime.win-arm64.Cef.Runtime.csproj -o artifacts
           dotnet pack nuget/Cef.Runtime.csproj -o artifacts
       - name: Publish on GitHub
         run: |

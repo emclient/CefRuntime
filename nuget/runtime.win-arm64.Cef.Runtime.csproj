@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.Build.NoTargets/3.7.56">
+  <PropertyGroup>
+    <CefBinaryPath>cef_binary_arm64</CefBinaryPath>
+    <CefRuntimeIdentifier>win-arm64</CefRuntimeIdentifier>
+  </PropertyGroup>
+  <Import Project="runtime.native.Cef.Runtime.props" />
+</Project>
