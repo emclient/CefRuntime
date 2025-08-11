@@ -20,7 +20,7 @@ jobs:
       matrix:
         #arch: [win-x86, win-x64, win-arm64]
         arch: [win-arm64]
-        includes:
+        include:
           #- arch: win-x86
           #  output-suffix: windows32
           #  build-switch: ''
@@ -35,7 +35,7 @@ jobs:
             runner: 'arm64'
     runs-on:
       group: Metal
-      labels: ["${{ matrix.runner }}"]
+      labels: ${{ matrix.runner }}
     permissions:
       contents: write
     timeout-minutes: 1440
