@@ -24,14 +24,18 @@ jobs:
           #- arch: win-x86
           #  output-suffix: windows32
           #  build-switch: ''
+          #  runner: 'x64'
           #- arch: win-x64
           #  output-suffix: windows64
           #  build-switch: '--x64-build'
+          #  runner: 'x64'
           - arch: win-arm64
-            output-suffix: windowsarm64
+            output-suffix: 'windowsarm64'
             build-switch: '--arm64-build'
+            runner: 'arm64'
     runs-on:
       group: Metal
+      labels: [${{ matrix.runner }}]
     permissions:
       contents: write
     timeout-minutes: 1440
