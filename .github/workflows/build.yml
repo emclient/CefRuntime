@@ -42,13 +42,16 @@ jobs:
       - name: Download automate-git.py
         shell: cmd
         run: curl -O https://raw.githubusercontent.com/emclient/cef/refs/heads/${{ inputs.branch }}/tools/automate/automate-git.py
+      - name: Prepare ARM64 environment variables
+        if: matrix.arch == 'arm64'
+        run: |
+          echo "CEF_ENABLE_ARM64=1" >> $GITHUB_ENV
       - name: Build CEF (${{ matrix.arch }})
         shell: cmd
         run: |
           set GN_DEFINES=is_official_build=true
           set GYP_MSVS_VERSION=2022
           set CEF_ARCHIVE_FORMAT=tar.bz2
-          set CEF_ENABLE_ARM64=1
           python automate-git.py --download-dir=${{ github.workspace }} --url=https://github.com/emclient/cef.git --branch=${{ inputs.branch }} --minimal-distrib --client-distrib ${{ inputs.clean && '--force-clean' || '--force-build' }} ${{ matrix.build-switch }} --clean-artifacts --with-pgo-profiles
       - name: Upload CEF artifacts
         uses: actions/upload-artifact@v4
