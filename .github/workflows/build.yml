@@ -18,17 +18,16 @@ jobs:
   build:
     strategy:
       matrix:
-        #arch: [win-x86, win-x64, win-arm64]
-        arch: [win-arm64]
+        arch: [win-x86, win-x64, win-arm64]
         include:
-          #- arch: win-x86
-          #  output-suffix: windows32
-          #  build-switch: ''
-          #  runner: 'x64'
-          #- arch: win-x64
-          #  output-suffix: windows64
-          #  build-switch: '--x64-build'
-          #  runner: 'x64'
+          - arch: win-x86
+            output-suffix: 'windows32'
+            build-switch: ''
+            runner: 'x64'
+          - arch: win-x64
+            output-suffix: 'windows64'
+            build-switch: '--x64-build'
+            runner: 'x64'
           - arch: win-arm64
             output-suffix: 'windowsarm64'
             build-switch: '--build-target=cefsimple --arm64-build'
@@ -59,7 +58,6 @@ jobs:
             chromium/src/cef/binary_distrib/cef_binary_*_${{ matrix.output-suffix }}*.tar.bz2
 
   release:
-    if: false
     runs-on: ubuntu-latest
     needs: build
     permissions:
@@ -84,7 +82,6 @@ jobs:
           files: ./artifacts/**/*.tar.bz2
 
   publish-nuget:
-    if: false
     runs-on: ubuntu-latest
     needs: release
     permissions:
