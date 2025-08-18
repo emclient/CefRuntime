@@ -9,6 +9,11 @@
       "cef.runtime": {
         "runtime.win-x64.Cef.Runtime": "$VERSION$"
       }
+    },
+    "win-arm64": {
+      "cef.runtime": {
+        "runtime.win-arm64.Cef.Runtime": "$VERSION$"
+      }
     }
   }
 }
