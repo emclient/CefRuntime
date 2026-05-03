@@ -44,6 +44,7 @@ jobs:
         run: curl -O https://raw.githubusercontent.com/emclient/cef/refs/heads/${{ inputs.branch }}/tools/automate/automate-git.py
       - name: Prepare ARM64 environment variables
         if: matrix.arch == 'win-arm64'
+        shell: cmd
         run: |
           echo "CEF_ENABLE_ARM64=1" >> $GITHUB_ENV
       - name: Build CEF (${{ matrix.arch }})
