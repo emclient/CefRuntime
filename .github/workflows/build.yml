@@ -46,7 +46,7 @@ jobs:
         if: matrix.arch == 'win-arm64'
         shell: cmd
         run: |
-          echo "CEF_ENABLE_ARM64=1" >> $GITHUB_ENV
+          echo "CEF_ENABLE_ARM64=1" >> %GITHUB_ENV%
       - name: Build CEF (${{ matrix.arch }})
         shell: cmd
         run: |
